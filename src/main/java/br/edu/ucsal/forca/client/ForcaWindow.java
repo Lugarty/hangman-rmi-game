@@ -21,6 +21,8 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -38,6 +40,7 @@ public final class ForcaWindow extends JFrame {
     private final JLabel mistakesLabel = new JLabel("Erros: 0 / 6");
     private final JLabel lettersLabel = new JLabel("Letras tentadas: -");
     private final JLabel feedbackLabel = new JLabel("Informe nome, host e porta e clique em Conectar.");
+    private final JTextArea serverLogArea = new JTextArea();
 
     private final JButton connectButton = new JButton("Conectar");
     private final JButton leaveButton = new JButton("Sair da sala");
@@ -55,6 +58,11 @@ public final class ForcaWindow extends JFrame {
     }
 
     public ForcaWindow(String nomeInicial, String hostInicial, int portaInicial) {
+        this(nomeInicial, hostInicial, portaInicial, false);
+    }
+
+    public ForcaWindow(String nomeInicial, String hostInicial, int portaInicial,
+                       boolean mostrarRegistroServidor) {
         super("Jogo da Forca | Java RMI");
         nomeField = new JTextField(nomeInicial == null || nomeInicial.isBlank()
                 ? "Jogador" : nomeInicial, 10);
@@ -62,14 +70,16 @@ public final class ForcaWindow extends JFrame {
                 ? "127.0.0.1" : hostInicial, 12);
         portField = new JTextField(Integer.toString(portaInicial), 5);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setSize(1050, 650);
-        setMinimumSize(new Dimension(850, 550));
+        setSize(mostrarRegistroServidor ? 1250 : 1050, 650);
+        setMinimumSize(mostrarRegistroServidor
+                ? new Dimension(1050, 550) : new Dimension(850, 550));
         setLocationRelativeTo(null);
 
         JPanel root = new JPanel(new BorderLayout(12, 12));
         root.setBorder(BorderFactory.createEmptyBorder(16, 18, 16, 18));
         root.add(connectionPanel(), BorderLayout.NORTH);
         root.add(gamePanel(), BorderLayout.CENTER);
+        if (mostrarRegistroServidor) root.add(serverLogPanel(), BorderLayout.EAST);
 
         feedbackLabel.setBorder(BorderFactory.createEmptyBorder(10, 4, 4, 4));
         root.add(feedbackLabel, BorderLayout.SOUTH);
@@ -79,12 +89,40 @@ public final class ForcaWindow extends JFrame {
         setRestartAvailable(false, false);
     }
 
+    private JPanel serverLogPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createTitledBorder("Registro do servidor"));
+        panel.setPreferredSize(new Dimension(280, 0));
+        serverLogArea.setEditable(false);
+        serverLogArea.setLineWrap(true);
+        serverLogArea.setWrapStyleWord(true);
+        serverLogArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        panel.add(new JScrollPane(serverLogArea), BorderLayout.CENTER);
+        return panel;
+    }
+
+    public void appendServerLog(String evento) {
+        if (evento == null || evento.isBlank()) return;
+        naEdt(() -> {
+            serverLogArea.append(evento + System.lineSeparator());
+            while (serverLogArea.getLineCount() > 200) {
+                try {
+                    serverLogArea.getDocument().remove(
+                            0, serverLogArea.getLineEndOffset(0));
+                } catch (javax.swing.text.BadLocationException ignorado) {
+                    break;
+                }
+            }
+            serverLogArea.setCaretPosition(serverLogArea.getDocument().getLength());
+        });
+    }
+
     private JPanel connectionPanel() {
         JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 8));
         bar.setBorder(BorderFactory.createTitledBorder("Conexao com o servidor"));
         bar.add(new JLabel("Nome:"));
         bar.add(nomeField);
-        bar.add(new JLabel("Host:"));
+        bar.add(new JLabel("IP do host:"));
         bar.add(hostField);
         bar.add(new JLabel("Porta:"));
         bar.add(portField);

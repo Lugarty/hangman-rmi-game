@@ -35,24 +35,27 @@ public final class ForcaLauncherApp {
     }
 
     private static void hospedarPartida() {
-        String ipRadmin = JOptionPane.showInputDialog(
+        String ipHost = JOptionPane.showInputDialog(
                 null,
-                "Com o Radmin conectado, informe o IP que aparece no seu computador:",
+                "Informe o IP deste computador (host):",
                 "Hospedar partida",
                 JOptionPane.QUESTION_MESSAGE);
-        if (ipRadmin == null || ipRadmin.isBlank()) {
+        if (ipHost == null || ipHost.isBlank()) {
             return;
         }
 
         try {
-            registryHospedado = ForcaServerApp.iniciarServidor(1099, ipRadmin.strip(), 1100);
+            ServerActivityLog registroServidor = new ServerActivityLog();
+            registryHospedado = ForcaServerApp.iniciarServidor(
+                    1099, ipHost.strip(), 1100, registroServidor);
+            registroServidor.accept("IP do host: " + ipHost.strip());
             JOptionPane.showMessageDialog(
                     null,
                     "Servidor iniciado. Passe este IP para o outro jogador:\n"
-                            + ipRadmin.strip() + "\n\nMantenha esta janela aberta.",
+                            + ipHost.strip() + "\n\nMantenha esta janela aberta.",
                     "Partida hospedada",
                     JOptionPane.INFORMATION_MESSAGE);
-            ForcaClientApp.abrir("Jogador", "127.0.0.1", 1099);
+            ForcaClientApp.abrirComoHost("Jogador", "127.0.0.1", 1099, registroServidor);
         } catch (Exception erro) {
             String detalhe = erro.getMessage() == null
                     ? erro.getClass().getSimpleName() : erro.getMessage();
@@ -68,7 +71,7 @@ public final class ForcaLauncherApp {
     private static void entrarEmPartida() {
         String host = JOptionPane.showInputDialog(
                 null,
-                "Digite o IP do Radmin VPN do computador que esta hospedando:",
+                "Informe o IP do host:",
                 "Entrar em partida",
                 JOptionPane.QUESTION_MESSAGE);
         if (host == null || host.isBlank()) {

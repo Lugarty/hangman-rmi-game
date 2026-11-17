@@ -36,16 +36,32 @@ public final class ForcaClientApp {
 
     /** Abre o cliente grafico com os dados de conexao inicial ja preenchidos. */
     public static void abrir(String nome, String host, int porta) {
+        abrir(nome, host, porta, null);
+    }
+
+    /** Abre a janela do jogador anfitriao com o registro local do servidor. */
+    public static void abrirComoHost(String nome, String host, int porta,
+                                     ServerActivityLog registroServidor) {
+        abrir(nome, host, porta, registroServidor);
+    }
+
+    private static void abrir(String nome, String host, int porta,
+                              ServerActivityLog registroServidor) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception ignored) {
             // LAF nativo e opcional.
         }
-        SwingUtilities.invokeLater(() -> abrirJanela(nome, host, porta));
+        SwingUtilities.invokeLater(() -> abrirJanela(nome, host, porta, registroServidor));
     }
 
-    private static void abrirJanela(String nomeInicial, String hostInicial, int portaInicial) {
-        ForcaWindow janela = new ForcaWindow(nomeInicial, hostInicial, portaInicial);
+    private static void abrirJanela(String nomeInicial, String hostInicial, int portaInicial,
+                                    ServerActivityLog registroServidor) {
+        ForcaWindow janela = new ForcaWindow(
+                nomeInicial, hostInicial, portaInicial, registroServidor != null);
+        if (registroServidor != null) {
+            registroServidor.setOuvinte(janela::appendServerLog);
+        }
         AtomicReference<Sessao> atual = new AtomicReference<>();
         AtomicBoolean conectando = new AtomicBoolean();
         AtomicBoolean enviandoJogada = new AtomicBoolean();
