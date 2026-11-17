@@ -1,6 +1,7 @@
 # Java compilado
 *.class
 *.jar
+!/dist/ForcaCooperativa/app/hangman-rmi-game.jar
 *.war
 *.ear
 /build/
