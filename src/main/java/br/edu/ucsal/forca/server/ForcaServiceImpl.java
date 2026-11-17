@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Consumer;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
@@ -52,6 +53,7 @@ public final class ForcaServiceImpl extends UnicastRemoteObject implements Forca
     private final Supplier<String> sorteador;
     private final LongSupplier relogio;
     private final long tempoLimiteMs;
+    private final Consumer<String> registroEventos;
 
     private String palavraSecreta = "";
     private Fase fase = Fase.AGUARDANDO;
@@ -62,21 +64,34 @@ public final class ForcaServiceImpl extends UnicastRemoteObject implements Forca
 
     /** Porta fixa para o objeto remoto facilita testes entre maquinas na LAN. */
     public ForcaServiceImpl(int portaObjeto) throws RemoteException {
+        this(portaObjeto, mensagem -> { });
+    }
+
+    public ForcaServiceImpl(int portaObjeto, Consumer<String> registroEventos)
+            throws RemoteException {
         this(portaObjeto,
                 () -> PALAVRAS[ThreadLocalRandom.current().nextInt(PALAVRAS.length)],
-                System::currentTimeMillis, TEMPO_LIMITE_SESSAO_MS);
+                System::currentTimeMillis, TEMPO_LIMITE_SESSAO_MS, registroEventos);
     }
 
     /** Permite injetar palavra e relogio deterministas nos testes. */
     ForcaServiceImpl(int portaObjeto, Supplier<String> sorteador,
                      LongSupplier relogio, long tempoLimiteMs) throws RemoteException {
+        this(portaObjeto, sorteador, relogio, tempoLimiteMs, mensagem -> { });
+    }
+
+    ForcaServiceImpl(int portaObjeto, Supplier<String> sorteador,
+                     LongSupplier relogio, long tempoLimiteMs,
+                     Consumer<String> registroEventos) throws RemoteException {
         super(portaObjeto);
-        if (sorteador == null || relogio == null || tempoLimiteMs <= 0) {
+        if (sorteador == null || relogio == null || tempoLimiteMs <= 0
+                || registroEventos == null) {
             throw new IllegalArgumentException("Configuracao invalida do servidor.");
         }
         this.sorteador = sorteador;
         this.relogio = relogio;
         this.tempoLimiteMs = tempoLimiteMs;
+        this.registroEventos = registroEventos;
     }
 
     @Override
@@ -100,8 +115,8 @@ public final class ForcaServiceImpl extends UnicastRemoteObject implements Forca
             mensagem = "Aguardando o segundo jogador.";
             versao++;
         }
-        System.out.printf("Jogador %d (%s) entrou. Sala: %d/2%n",
-                numero, apelido, participantes.size());
+        registrarEvento(String.format(Locale.ROOT, "Jogador %d (%s) entrou. Sala: %d/2",
+                numero, apelido, participantes.size()));
         return new Conexao(true, numero, token, "Conectado como Jogador " + numero + ".");
     }
 
@@ -181,9 +196,10 @@ public final class ForcaServiceImpl extends UnicastRemoteObject implements Forca
         expirarInativos();
         Participante jogador = participantes.remove(token);
         if (jogador != null) {
+            String evento = "Jogador " + jogador.numero + " (" + jogador.nome
+                    + ") saiu. Sala: " + participantes.size() + "/2";
+            registrarEvento(evento);
             registrarSaida("Jogador " + jogador.numero + " saiu.");
-            System.out.printf("Jogador %d saiu. Sala: %d/2%n",
-                    jogador.numero, participantes.size());
         }
     }
 
@@ -204,8 +220,9 @@ public final class ForcaServiceImpl extends UnicastRemoteObject implements Forca
         while (it.hasNext()) {
             Participante jogador = it.next().getValue();
             if (agora - jogador.ultimoContato > tempoLimiteMs) {
-                mensagemExpiracao = "Jogador " + jogador.numero + " perdeu a conexao.";
-                System.out.println(mensagemExpiracao);
+                mensagemExpiracao = "Jogador " + jogador.numero + " (" + jogador.nome
+                        + ") perdeu a conexao.";
+                registrarEvento(mensagemExpiracao);
                 it.remove();
             }
         }
@@ -243,7 +260,12 @@ public final class ForcaServiceImpl extends UnicastRemoteObject implements Forca
             jogador.pediuReinicio = false;
         }
         versao++;
-        System.out.printf("Nova partida iniciada (%d letras).%n", palavraSecreta.length());
+        registrarEvento("Nova partida iniciada (" + palavraSecreta.length() + " letras).");
+    }
+
+    private void registrarEvento(String mensagem) {
+        System.out.println(mensagem);
+        registroEventos.accept(mensagem);
     }
 
     private boolean venceu() {

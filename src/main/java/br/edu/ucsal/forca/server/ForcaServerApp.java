@@ -2,6 +2,7 @@ package br.edu.ucsal.forca.server;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.function.Consumer;
 
 /** Inicializacao do servidor e publicacao do servico no Registry. */
 public final class ForcaServerApp {
@@ -19,8 +20,18 @@ public final class ForcaServerApp {
     /** Inicia o Registry RMI e publica o servico para servidores de linha de comando e GUI. */
     public static Registry iniciarServidor(
             int portaRegistry, String hostAnunciado, int portaObjeto) throws Exception {
+        return iniciarServidor(portaRegistry, hostAnunciado, portaObjeto, mensagem -> { });
+    }
+
+    /** Inicia o servidor e encaminha os eventos para o registro visual opcional do host. */
+    public static Registry iniciarServidor(int portaRegistry, String hostAnunciado,
+                                            int portaObjeto, Consumer<String> registroEventos)
+            throws Exception {
         validarPorta(portaRegistry);
         validarPorta(portaObjeto);
+        if (registroEventos == null) {
+            throw new IllegalArgumentException("O registro de eventos nao pode ser nulo.");
+        }
         if (portaRegistry == portaObjeto) {
             throw new IllegalArgumentException("Registry e objeto remoto devem usar portas diferentes.");
         }
@@ -29,13 +40,18 @@ public final class ForcaServerApp {
         }
 
         Registry registry = LocateRegistry.createRegistry(portaRegistry);
-        registry.rebind("ForcaService", new ForcaServiceImpl(portaObjeto));
+        registry.rebind("ForcaService", new ForcaServiceImpl(portaObjeto, registroEventos));
 
-        System.out.println("Servidor da Forca iniciado.");
-        System.out.printf("RMI Registry: porta %d | objeto remoto: porta %d%n",
-                portaRegistry, portaObjeto);
-        System.out.println("Servico registrado: ForcaService");
+        registrarEvento("Servidor da Forca iniciado.", registroEventos);
+        registrarEvento(String.format("RMI Registry: porta %d | objeto remoto: porta %d",
+                portaRegistry, portaObjeto), registroEventos);
+        registrarEvento("Servico registrado: ForcaService", registroEventos);
         return registry;
+    }
+
+    private static void registrarEvento(String mensagem, Consumer<String> registroEventos) {
+        System.out.println(mensagem);
+        registroEventos.accept(mensagem);
     }
 
     private static void validarPorta(int porta) {
