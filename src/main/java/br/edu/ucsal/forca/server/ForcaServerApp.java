@@ -12,12 +12,19 @@ public final class ForcaServerApp {
         String hostAnunciado = args.length > 1 ? args[1] : "";
         int portaObjeto = args.length > 2 ? Integer.parseInt(args[2]) : 1100;
 
+        iniciarServidor(portaRegistry, hostAnunciado, portaObjeto);
+        System.out.println("Use Ctrl+C para encerrar o servidor.");
+    }
+
+    /** Inicia o Registry RMI e publica o servico para servidores de linha de comando e GUI. */
+    public static Registry iniciarServidor(
+            int portaRegistry, String hostAnunciado, int portaObjeto) throws Exception {
         validarPorta(portaRegistry);
         validarPorta(portaObjeto);
         if (portaRegistry == portaObjeto) {
             throw new IllegalArgumentException("Registry e objeto remoto devem usar portas diferentes.");
         }
-        if (!hostAnunciado.isBlank()) {
+        if (hostAnunciado != null && !hostAnunciado.isBlank()) {
             System.setProperty("java.rmi.server.hostname", hostAnunciado);
         }
 
@@ -28,7 +35,7 @@ public final class ForcaServerApp {
         System.out.printf("RMI Registry: porta %d | objeto remoto: porta %d%n",
                 portaRegistry, portaObjeto);
         System.out.println("Servico registrado: ForcaService");
-        System.out.println("Use Ctrl+C para encerrar o servidor.");
+        return registry;
     }
 
     private static void validarPorta(int porta) {

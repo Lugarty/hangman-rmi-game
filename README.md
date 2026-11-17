@@ -55,6 +55,19 @@ For a local-network game, start the server with the registry port, the server's 
 ForcaServerApp [registry-port] [advertised-host] [remote-object-port]
 ```
 
+## Run from the GitHub ZIP
+
+The repository includes the portable Windows app. Download the repository with **Code > Download ZIP**, extract it, and open `dist\ForcaCooperativa\ForcaCooperativa.exe`. The bundled Java runtime means players do not need to install a JDK. Keep the complete `dist\ForcaCooperativa` folder together.
+
+The launcher offers two options:
+
+- **Hospedar partida** asks for this computer's Radmin VPN address, starts the RMI server, and opens the local game client.
+- **Entrar em partida** asks for the host's Radmin VPN address and opens the client.
+
+Both computers must be connected to the same Radmin VPN network. The host must allow TCP ports 1099 and 1100 through its firewall.
+
+To rebuild the Windows package from source, run `scripts\package-windows.ps1` on Windows with a JDK 17 or later.
+
 ## Tests
 
 `ForcaIntegrationTest` exercises the server through an actual RMI registry. `ForcaGuiSmokeTest` starts two Swing clients and checks that turns update across the network. Both are standalone Java test programs rather than JUnit tests.

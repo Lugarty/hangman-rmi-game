@@ -28,9 +28,9 @@ import javax.swing.WindowConstants;
 
 /** Interface grafica: apenas apresenta estado publico e encaminha comandos. */
 public final class ForcaWindow extends JFrame {
-    private final JTextField nomeField = new JTextField("Jogador", 10);
-    private final JTextField hostField = new JTextField("127.0.0.1", 12);
-    private final JTextField portField = new JTextField("1099", 5);
+    private final JTextField nomeField;
+    private final JTextField hostField;
+    private final JTextField portField;
     private final JLabel jogadorLabel = new JLabel("Nao conectado");
     private final JLabel phaseLabel = new JLabel("Aguardando conexao");
     private final JLabel turnLabel = new JLabel("Turno: -");
@@ -51,7 +51,16 @@ public final class ForcaWindow extends JFrame {
     private Runnable restartHandler;
 
     public ForcaWindow() {
+        this("Jogador", "127.0.0.1", 1099);
+    }
+
+    public ForcaWindow(String nomeInicial, String hostInicial, int portaInicial) {
         super("Jogo da Forca | Java RMI");
+        nomeField = new JTextField(nomeInicial == null || nomeInicial.isBlank()
+                ? "Jogador" : nomeInicial, 10);
+        hostField = new JTextField(hostInicial == null || hostInicial.isBlank()
+                ? "127.0.0.1" : hostInicial, 12);
+        portField = new JTextField(Integer.toString(portaInicial), 5);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(1050, 650);
         setMinimumSize(new Dimension(850, 550));
