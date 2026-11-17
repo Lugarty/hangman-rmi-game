@@ -1,0 +1,32 @@
+# Java compilado
+*.class
+*.jar
+*.war
+*.ear
+/build/
+/out/
+/bin/
+/target/
+.gradle/
+
+# Preferencias locais da IDE
+.vscode/
+.idea/
+.settings/
+.classpath
+.project
+*.iml
+
+# Temporarios e logs
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Anotacoes locais extraidas do Classroom
+/materiais_professor/Instrucoes_Atividades_Projeto_Classroom_*.txt
+
+# Arquivos acadêmicos mantidos apenas no computador
+/materiais_professor/
+/versoes_anteriores_relatorio/
+/relatorio_tecnico_forca/
