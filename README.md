@@ -49,7 +49,7 @@ Start a client in a second terminal:
 java -cp .\out br.edu.ucsal.forca.client.ForcaClientApp
 ```
 
-For a local-network game, pass the registry port, the server's LAN address, and the remote-object port to the server. Allow both ports through the server machine's firewall, then connect from the client using the server's LAN address.
+For a local-network game, start the server with the registry port, the server's LAN address, and the remote-object port. Allow both ports through the server machine's firewall. In each client window, enter the server's LAN address in **Host** and the registry port in **Port** (1099 by default).
 
 ```text
 ForcaServerApp [registry-port] [advertised-host] [remote-object-port]
@@ -67,7 +67,11 @@ javac -cp .\out -d .\out $testSources
 java -cp .\out br.edu.ucsal.forca.server.ForcaIntegrationTest
 ```
 
-Run `ForcaGuiSmokeTest` only in a graphical desktop session.
+Run `ForcaGuiSmokeTest` only in a graphical desktop session:
+
+```powershell
+java -cp .\out br.edu.ucsal.forca.client.ForcaGuiSmokeTest
+```
 
 ## Project Structure
 
@@ -84,8 +88,9 @@ src/test/java/br/edu/ucsal/forca/
 
 ## Project Status and License
 
-This is a personal academic project, not a commercial product. No license has been specified.
+This is an academic group project, not a commercial product. No license has been specified.
 
-## Author
+## Authors
 
-[Anísio Oliveira (@Lugarty)](https://github.com/Lugarty)
+- Anísio Oliveira Albuquerque Filho ([@Lugarty](https://github.com/Lugarty))
+- Carlos Bernardo Góes dos Santos
