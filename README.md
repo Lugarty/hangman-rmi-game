@@ -61,8 +61,8 @@ The repository includes the portable Windows app. Download the repository with *
 
 The launcher offers two options:
 
-- **Hospedar partida** asks for this computer's Radmin VPN address, starts the RMI server, and opens the local game client.
-- **Entrar em partida** asks for the host's Radmin VPN address and opens the client.
+- **Hospedar partida** asks for this computer's IP address, starts the RMI server, and opens the local game client. The host window shows a recent activity log with player connections and departures.
+- **Entrar em partida** asks for the host's IP address and opens the client.
 
 Both computers must be connected to the same Radmin VPN network. The host must allow TCP ports 1099 and 1100 through its firewall.
 
